@@ -18,14 +18,14 @@ jobs:
       - name: Set default values for UPSTREAM_REPO and TARGET_BRANCH if not set
         run: |
           # Use the current repository name if UPSTREAM_REPO is not set
-          : "${UPSTREAM_REPO:=${{ github.event.repository.name }} }"
+          : "${UPSTREAM_REPO:=${{ github.event.repository.name }}}"
           : "${TARGET_BRANCH:=master}"
 
-          # Format the repository name for flathub
+          # Format the repository name for flathub, ensure no trailing spaces
           UPSTREAM_REPO="https://github.com/flathub/${UPSTREAM_REPO}"
 
-          echo "UPSTREAM_REPO=$UPSTREAM_REPO" >> $GITHUB_ENV
-          echo "TARGET_BRANCH=$TARGET_BRANCH" >> $GITHUB_ENV
+          echo "UPSTREAM_REPO=${UPSTREAM_REPO}" >> $GITHUB_ENV
+          echo "TARGET_BRANCH=${TARGET_BRANCH}" >> $GITHUB_ENV
           
       - name: Sync from Upstream Repository
         run: |
@@ -37,7 +37,6 @@ jobs:
             echo "Conflict detected. Resolving by preferring upstream changes..."
             git merge --strategy-option theirs --no-edit FETCH_HEAD
           }
-
 
       - name: Push changes if there are updates
         env:
