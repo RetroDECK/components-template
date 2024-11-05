@@ -47,38 +47,38 @@ jobs:
         env:
           BRANCH_NAME: "sync-${{ github.run_id }}"  # Temporary branch name for the PR
         run: |
-          echo "Syncing from upstream repository $UPSTREAM_REPO on branch $TARGET_BRANCH"
+          echo "Syncing from upstream repository ${{ env.UPSTREAM_REPO }} on branch ${{ env.TARGET_BRANCH }}"
           
           # Perform fetch and merge, attempting to resolve conflicts by preferring the upstream changes
-          git fetch "$UPSTREAM_REPO" "$TARGET_BRANCH"
+          git fetch "${{ env.UPSTREAM_REPO }}" "${{ env.TARGET_BRANCH }}"
           git checkout -b "$BRANCH_NAME"
 
           # Attempt to merge, allowing conflicts
-          if ! git merge FETCH_HEAD -m "Merge changes from upstream $UPSTREAM_REPO/$TARGET_BRANCH"; then
+          if ! git merge FETCH_HEAD -m "Merge changes from upstream ${{ env.UPSTREAM_REPO }}/${{ env.TARGET_BRANCH }}"; then
             echo "Conflicts detected. Staging conflicted files for the pull request."
             # Stage all changes, including conflicts
             git add -A
             # Commit the merge with conflicts
-            git commit -m "Merge changes from upstream $UPSTREAM_REPO/$TARGET_BRANCH with conflicts"
+            git commit -m "Merge changes from upstream ${{ env.UPSTREAM_REPO }}/${{ env.TARGET_BRANCH }} with conflicts"
           fi
 
       - name: Push changes to new branch
         if: success()
         run: |
-          git push origin "$BRANCH_NAME"
+          git push origin "${{ env.BRANCH_NAME }}"
 
       - name: Create Pull Request
         if: success()
         uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ steps.generate-rekku-token.outputs.token || secrets.GITHUB_TOKEN }}
-          commit-message: "Sync with upstream changes from $UPSTREAM_REPO"
+          commit-message: "Sync with upstream changes from ${{ env.UPSTREAM_REPO }}"
           branch: ${{ env.BRANCH_NAME }}
-          title: "Sync with upstream $UPSTREAM_REPO"
+          title: "Sync with upstream ${{ env.UPSTREAM_REPO }}"
           body: |
             This PR merges the latest changes from the upstream repository:
-            - **Repository**: $UPSTREAM_REPO
-            - **Branch**: $TARGET_BRANCH
+            - **Repository**: ${{ env.UPSTREAM_REPO }}
+            - **Branch**: ${{ env.TARGET_BRANCH }}
 
             ## Conflict Resolution Instructions
             If there are conflicts in this PR, you can resolve them locally by following these steps:
@@ -95,7 +95,7 @@ jobs:
 
             3. **Merge the upstream branch manually**:
                ```bash
-               git fetch https://github.com/flathub/$UPSTREAM_REPO $TARGET_BRANCH
+               git fetch https://github.com/flathub/${{ env.UPSTREAM_REPO }} ${{ env.TARGET_BRANCH }}
                git merge FETCH_HEAD
                ```
 
@@ -114,4 +114,4 @@ jobs:
                ```bash
                git push origin ${{ env.BRANCH_NAME }}
                ```
-          base: $TARGET_BRANCH
+          base: ${{ env.TARGET_BRANCH }}
