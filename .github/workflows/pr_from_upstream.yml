@@ -48,6 +48,19 @@ jobs:
           BRANCH_NAME: "sync-${{ github.run_id }}"  # Temporary branch name for the PR
         run: |
           echo "Syncing from upstream repository ${{ env.UPSTREAM_REPO }} on branch ${{ env.TARGET_BRANCH }}"
+
+          # Fetch and delete the branch if it exists locally
+          git fetch origin
+          if git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
+            echo "Branch $BRANCH_NAME exists locally. Deleting it."
+            git branch -D "$BRANCH_NAME"
+          fi
+
+          # Check if the branch exists on the remote and delete it if it does
+          if git ls-remote --heads origin "$BRANCH_NAME" | grep "$BRANCH_NAME"; then
+            echo "Branch $BRANCH_NAME exists on the remote. Deleting it."
+            git push origin --delete "$BRANCH_NAME"
+          fi
           
           # Perform fetch and merge, attempting to resolve conflicts by preferring the upstream changes
           git fetch "${{ env.UPSTREAM_REPO }}" "${{ env.TARGET_BRANCH }}"
