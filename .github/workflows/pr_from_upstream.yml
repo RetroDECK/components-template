@@ -18,7 +18,7 @@ jobs:
       - name: Set default values for UPSTREAM_REPO and TARGET_BRANCH if not set
         run: |
           # Use the current repository name if UPSTREAM_REPO is not set
-          : "${UPSTREAM_REPO:=${{ github.repository }} }"
+          : "${UPSTREAM_REPO:=${{ github.event.repository.name }} }"
           : "${TARGET_BRANCH:=master}"
 
           # Format the repository name for flathub
