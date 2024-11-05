@@ -66,6 +66,7 @@ jobs:
 
       - name: "Build flatpak"
         run: |
+
           # Configure Git
           git config --global protocol.file.allow always
       
@@ -74,7 +75,7 @@ jobs:
             --install-deps-from=flathub-beta \
             --repo=${GITHUB_WORKSPACE}/artifacts-repo \
             "${GITHUB_WORKSPACE}/artifacts-build-dir" \
-            net.retrodeck.retrodeck.yml
+            ${MANIFEST_FILENAME}
               
       - name: "Exporting dir tree"
         id: tree
