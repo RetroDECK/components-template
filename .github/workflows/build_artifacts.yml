@@ -88,6 +88,16 @@ jobs:
         id: branch_name
         run: echo "BRANCH_NAME=$(echo $GITHUB_REF | sed 's|refs/heads/||')" >> $GITHUB_ENV
 
+      - name: Generate a token for Rekku
+        if: ${{ github.repository == 'RetroDECK/RetroDECK' }}
+        id: generate-rekku-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.REKKU_APP_ID }}
+          private-key: ${{ secrets.REKKU_PRIVATE_KEY }}
+          repositories: "RetroDECK,Cooker"
+          owner: "RetroDECK"
+
       - name: Publish the artifacts in a new release
         uses: ncipollo/release-action@v1
         with:
@@ -99,4 +109,4 @@ jobs:
           artifacts: "${GITHUB_WORKSPACE}/RetroDECK-Artifact.tar.gz, ${GITHUB_WORKSPACE}/tree.html"
           allowUpdates: true
           makeLatest: true
-          token: ${{ secrets.TRIGGER_BUILD_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ steps.generate-rekku-token.outputs.token || secrets.TRIGGER_BUILD_TOKEN || secrets.GITHUB_TOKEN }}
