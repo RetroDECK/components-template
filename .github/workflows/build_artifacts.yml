@@ -38,9 +38,6 @@ jobs:
         with:
           submodules: 'true'
 
-      - name: "Install dependencies"
-        uses: RetroDECK/components-template/.github/workflows/install_dependencies.yml@main
-
       - name: "Assembling manifest"
         if: ${{ env.DYNAMIC_MANIFEST == 'true' }}
         run: |
@@ -63,13 +60,24 @@ jobs:
 
       - name: "Build flatpak"
         run: |
+          # Pull the Docker image
+          docker pull ghcr.io/retrodeck/retrodeck-builder:latest
+      
+          # Configure Git
           git config --global protocol.file.allow always
-          flatpak-builder --user --force-clean \
-            --install-deps-from=flathub \
-            --install-deps-from=flathub-beta \
-            --repo="${GITHUB_WORKSPACE}/artifacts-repo" \
-            "${GITHUB_WORKSPACE}/artifacts-build-dir" \
-            "${{ env.MANIFEST_FILENAME }}"
+      
+          # Run the flatpak build inside the Docker container
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}:/workspace" \  # Mount the workspace directory into the container
+            -w /workspace \  # Set the working directory inside the container
+            ghcr.io/retrodeck/retrodeck-builder:latest \
+              --user --force-clean \
+              --install-deps-from=flathub \
+              --install-deps-from=flathub-beta \
+              --repo="/workspace/artifacts-repo" \
+              "/workspace/artifacts-build-dir" \
+              "${{ env.MANIFEST_FILENAME }}"
+        
 
       - name: "Exporting dir tree"
         id: tree
