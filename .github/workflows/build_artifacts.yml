@@ -75,7 +75,7 @@ jobs:
             --install-deps-from=flathub-beta \
             --repo=${GITHUB_WORKSPACE}/artifacts-repo \
             "${GITHUB_WORKSPACE}/artifacts-build-dir" \
-            ${MANIFEST_FILENAME}
+            "${{ inputs.MANIFEST_FILENAME }}"
               
       - name: "Exporting dir tree"
         id: tree
