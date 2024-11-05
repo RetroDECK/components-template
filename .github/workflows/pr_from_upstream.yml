@@ -98,4 +98,3 @@ jobs:
                git push origin ${{ steps.push.outputs.BRANCH_NAME }}
                ```
           base: $TARGET_BRANCH
-          labels: ["sync", "upstream"]
