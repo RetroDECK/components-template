@@ -9,9 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  RUNNER_TAG: ${{ env.RUNNER_TAG || 'ubuntu-latest' }}
   DATE: ${{ github.run_id }}
-  MANIFEST_FILENAME: ${{ env.MANIFEST_FILENAME || '' }}
 
 jobs:
 
@@ -27,7 +25,7 @@ jobs:
 
   Building-project:
     needs: Check-variables
-    runs-on: ${{ env.RUNNER_TAG }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Clone repo
@@ -37,7 +35,7 @@ jobs:
           token: ${{ secrets.TRIGGER_BUILD_TOKEN }}
 
       - name: "Install dependencies"
-        uses: RetroDECK/components-template/.github/workflows/install_dependencies.yml@main
+        uses: .github/workflows/build_artifacts.yml
 
       - name: "Assembling manifest"
         if: ${{ env.DYNAMIC_MANIFEST == 'true' }}
