@@ -73,10 +73,8 @@ jobs:
           docker run --rm \
             -v "${GITHUB_WORKSPACE}:/workspace" \
             -w /workspace \
-            ebassi/flathub:base \
-            flatpak-builder --force-clean \
-            --install-deps-from=flathub \
-            --install-deps-from=flathub-beta \
+            ghcr.io/retrodeck/retrodeck-builder:latest \
+            --force-clean \
             --repo="/workspace/artifacts-repo" \
             "/workspace/artifacts-build-dir" \
             "${{ inputs.MANIFEST_FILENAME }}"
