@@ -8,6 +8,12 @@ jobs:
   install-dependencies:
     runs-on: ubuntu-latest
     steps:
+
+      - name: Clone repo
+        uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+
       - name: "Install dependencies"
         run: |
           echo "Starting dependency installation..."

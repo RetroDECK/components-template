@@ -38,6 +38,9 @@ jobs:
         with:
           submodules: 'true'
 
+      - name: "Install dependencies"
+        uses: ./.github/workflows/build_artifacts.yml
+
       - name: "Assembling manifest"
         if: ${{ env.DYNAMIC_MANIFEST == 'true' }}
         run: |
