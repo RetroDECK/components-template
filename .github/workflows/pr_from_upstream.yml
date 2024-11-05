@@ -75,6 +75,12 @@ jobs:
             git commit -m "Merge changes from upstream ${{ env.UPSTREAM_REPO }}/${{ env.TARGET_BRANCH }} with conflicts"
           fi
 
+          # Check if any changes were introduced by the merge
+          if git diff --exit-code; then
+            echo "No changes detected after merging. Exiting."
+            exit 0  # Exit the workflow if no changes are detected
+          fi
+
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
 
       - name: Push changes to new branch
