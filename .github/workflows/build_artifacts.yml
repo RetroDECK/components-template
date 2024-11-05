@@ -115,7 +115,7 @@ jobs:
             # Release Notes
             These are the artifacts for RetroDECK from ${{ github.repository }}, built from commit: ${{ github.repository }}@${{ github.sha }}.
             On branch [${{ github.ref_name }}](https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}).
-          artifacts: "${GITHUB_WORKSPACE}/RetroDECK-Artifact.tar.gz, ${GITHUB_WORKSPACE}/tree.html, ${GITHUB_WORKSPACE}/RetroDECK-Artifact-cooker.sha"
+          artifacts: "RetroDECK-Artifact.tar.gz, tree.html, RetroDECK-Artifact-cooker.sha"
           allowUpdates: true
           makeLatest: true
           token: ${{ steps.generate-rekku-token.outputs.token || secrets.TRIGGER_BUILD_TOKEN || secrets.GITHUB_TOKEN }}
