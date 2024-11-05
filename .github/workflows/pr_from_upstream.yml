@@ -15,6 +15,16 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0  # Retrieve full history to allow merging
 
+      - name: Generate a token for Rekku
+        if: ${{ github.repository == 'RetroDECK/RetroDECK' }}
+        id: generate-rekku-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.REKKU_APP_ID }}
+          private-key: ${{ secrets.REKKU_PRIVATE_KEY }}
+          repositories: "RetroDECK,Cooker"
+          owner: "RetroDECK"
+
       - name: Set default values for UPSTREAM_REPO and TARGET_BRANCH if not set
         run: |
           # Use the current repository name if UPSTREAM_REPO is not set
@@ -53,7 +63,7 @@ jobs:
         if: success() && steps.push.outputs.BRANCH_NAME != ''  # Only run if there are changes
         uses: peter-evans/create-pull-request@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.generate-rekku-token.outputs.token }}
           commit-message: "Sync with upstream changes from $UPSTREAM_REPO"
           branch: ${{ steps.push.outputs.BRANCH_NAME }}
           title: "Sync with upstream $UPSTREAM_REPO"
