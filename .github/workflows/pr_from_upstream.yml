@@ -25,6 +25,12 @@ jobs:
           repositories: "RetroDECK,Cooker"
           owner: "RetroDECK"
 
+      - name: Configuring Git
+        run: |
+          git config --global protocol.file.allow always
+          git config --global user.name "Rekku"
+          git config --global user.email "rekku@retrodeck.net"
+
       - name: Set default values for UPSTREAM_REPO and TARGET_BRANCH if not set
         run: |
           # Use the current repository name if UPSTREAM_REPO is not set
