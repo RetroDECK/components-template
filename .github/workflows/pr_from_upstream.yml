@@ -62,6 +62,8 @@ jobs:
             git commit -m "Merge changes from upstream ${{ env.UPSTREAM_REPO }}/${{ env.TARGET_BRANCH }} with conflicts"
           fi
 
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+
       - name: Push changes to new branch
         if: success()
         run: |
