@@ -54,19 +54,26 @@ jobs:
             git merge --strategy-option theirs --no-edit FETCH_HEAD
           }
 
-      - name: Push changes if there are updates
+      - name: Create a new branch for PR if changes detected
+        id: create_branch
         env:
           BRANCH_NAME: "sync-${{ github.run_id }}"  # Temporary branch name for the PR
         run: |
           if [ "$(git status --porcelain)" ]; then
             git checkout -b "$BRANCH_NAME"
-            git push origin "$BRANCH_NAME"
+            echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           else
-            echo "No changes to push."
+            echo "No changes detected. Exiting."
+            exit 0
           fi
 
+      - name: Push changes to new branch
+        if: success()
+        run: |
+          git push origin "$BRANCH_NAME"
+
       - name: Create Pull Request
-        if: success() && steps.push.outputs.branch != ''  # Only run if there are changes
+        if: success()
         uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ steps.generate-rekku-token.outputs.token || secrets.GITHUB_TOKEN }}
