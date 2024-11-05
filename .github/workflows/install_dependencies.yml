@@ -11,9 +11,4 @@ jobs:
       - name: "Install dependencies"
         run: |
           echo "Starting dependency installation..."
-          if [ -f "${GITHUB_WORKSPACE}/automation_tools/install_dependencies.sh" ]; then
-            /bin/bash "${GITHUB_WORKSPACE}/automation_tools/install_dependencies.sh"
-          else
-            echo "Dependency installation script not found."
-            exit 1
-          fi
+          /bin/bash "${GITHUB_WORKSPACE}/automation_tools/install_dependencies.sh"
