@@ -68,17 +68,16 @@ jobs:
       
           # Run the flatpak build inside the Docker container
           docker run --rm \
-            -v "${GITHUB_WORKSPACE}:/workspace" \  # Mount the workspace directory into the container
-            -w /workspace \  # Set the working directory inside the container
+            -v "${GITHUB_WORKSPACE}:/workspace" \
+            -w /workspace \
             ghcr.io/retrodeck/retrodeck-builder:latest \
-              --user --force-clean \
-              --install-deps-from=flathub \
-              --install-deps-from=flathub-beta \
-              --repo="/workspace/artifacts-repo" \
-              "/workspace/artifacts-build-dir" \
-              "${{ env.MANIFEST_FILENAME }}"
-        
-
+            --user --force-clean \
+            --install-deps-from=flathub \
+            --install-deps-from=flathub-beta \
+            --repo="/workspace/artifacts-repo" \
+            "/workspace/artifacts-build-dir" \
+            "${{ env.MANIFEST_FILENAME }}"
+              
       - name: "Exporting dir tree"
         id: tree
         run: |
