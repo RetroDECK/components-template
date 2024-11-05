@@ -7,6 +7,7 @@ name: "Build Artifacts for RetroDECK main manifest"
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 env:
   DATE: ${{ github.run_id }}
