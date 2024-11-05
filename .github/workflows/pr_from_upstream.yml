@@ -1,0 +1,101 @@
+name: "Sync with Upstream and Create PR"
+
+on:
+    workflow_dispatch:
+    workflow_call:
+
+jobs:
+  sync-upstream:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Retrieve full history to allow merging
+
+      - name: Set default values for UPSTREAM_REPO and TARGET_BRANCH if not set
+        run: |
+          # Use the current repository name if UPSTREAM_REPO is not set
+          : "${UPSTREAM_REPO:=${{ github.repository }} }"
+          : "${TARGET_BRANCH:=master}"
+
+          # Format the repository name for flathub
+          UPSTREAM_REPO="https://github.com/flathub/${UPSTREAM_REPO}"
+
+          echo "UPSTREAM_REPO=$UPSTREAM_REPO" >> $GITHUB_ENV
+          echo "TARGET_BRANCH=$TARGET_BRANCH" >> $GITHUB_ENV
+          
+      - name: Sync from Upstream Repository
+        run: |
+          echo "Syncing from upstream repository $UPSTREAM_REPO on branch $TARGET_BRANCH"
+          
+          # Perform fetch and merge, attempting to resolve conflicts by preferring the upstream changes
+          git fetch "$UPSTREAM_REPO" "$TARGET_BRANCH"
+          git merge FETCH_HEAD -m "Merge changes from upstream $UPSTREAM_REPO/$TARGET_BRANCH" || {
+            echo "Conflict detected. Resolving by preferring upstream changes..."
+            git merge --strategy-option theirs --no-edit FETCH_HEAD
+          }
+
+
+      - name: Push changes if there are updates
+        env:
+          BRANCH_NAME: "sync-${{ github.run_id }}"  # Temporary branch name for the PR
+        run: |
+          if [ "$(git status --porcelain)" ]; then
+            git checkout -b "$BRANCH_NAME"
+            git push origin "$BRANCH_NAME"
+          else
+            echo "No changes to push."
+          fi
+
+            - name: Create Pull Request
+        if: success() && steps.push.outputs.BRANCH_NAME != ''  # Only run if there are changes
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Sync with upstream changes from $UPSTREAM_REPO"
+          branch: ${{ steps.push.outputs.BRANCH_NAME }}
+          title: "Sync with upstream $UPSTREAM_REPO"
+          body: |
+            This PR merges the latest changes from the upstream repository:
+            - **Repository**: $UPSTREAM_REPO
+            - **Branch**: $TARGET_BRANCH
+
+            ## Conflict Resolution Instructions
+            If there are conflicts in this PR, you can resolve them locally by following these steps:
+
+            1. **Fetch the remote branch**:
+               ```bash
+               git fetch origin ${{ steps.push.outputs.BRANCH_NAME }}
+               ```
+
+            2. **Checkout the branch**:
+               ```bash
+               git checkout ${{ steps.push.outputs.BRANCH_NAME }}
+               ```
+
+            3. **Merge the upstream branch manually**:
+               ```bash
+               git fetch https://github.com/flathub/$UPSTREAM_REPO $TARGET_BRANCH
+               git merge FETCH_HEAD
+               ```
+
+            4. **Resolve any conflicts**:
+               Open each conflicted file and manually resolve the conflicts. Then mark each file as resolved:
+               ```bash
+               git add <file-with-conflicts>
+               ```
+
+            5. **Complete the merge**:
+               ```bash
+               git commit
+               ```
+
+            6. **Push the resolved branch**:
+               ```bash
+               git push origin ${{ steps.push.outputs.BRANCH_NAME }}
+               ```
+          base: $TARGET_BRANCH
+          labels: ["sync", "upstream"]

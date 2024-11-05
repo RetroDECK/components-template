@@ -1,0 +1,20 @@
+name: "Build Artifacts for RetroDECK main manifest"
+
+on:
+  push:
+    branches:
+     - master
+     - main
+  workflow_call:
+
+jobs:
+  Building-project:
+    runs-on: ubuntu-latest
+
+    steps:
+
+        - name: "Install dependencies"
+          uses: RetroDECK/components-template/.github/workflows/install_dependencies.yml@main
+
+        - name: "Build project"
+          uses: RetroDECK/components-template/.github/workflows/build_artifacts.yml@main
