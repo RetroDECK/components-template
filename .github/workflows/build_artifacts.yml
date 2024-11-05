@@ -74,7 +74,7 @@ jobs:
             -v "${GITHUB_WORKSPACE}:/workspace" \
             -w /workspace \
             ebassi/flathub:base \
-            flatpak-builder --user --force-clean \
+            flatpak-builder --force-clean \
             --install-deps-from=flathub \
             --install-deps-from=flathub-beta \
             --repo="/workspace/artifacts-repo" \
