@@ -8,24 +8,17 @@ name: "Build Artifacts for RetroDECK main manifest"
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      MANIFEST_FILENAME:
+        required: true
+        type: string
 
 env:
   DATE: ${{ github.run_id }}
 
 jobs:
 
-  Check-variables:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check MANIFEST_FILENAME is set
-        run: |
-          if [ -z "${{ env.MANIFEST_FILENAME }}" ]; then
-            echo "Error: MANIFEST_FILENAME is not set. This is required for the pipeline to run."
-            exit 1
-          fi
-
   Building-project:
-    needs: Check-variables
     runs-on: ubuntu-latest
 
     steps:
