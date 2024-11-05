@@ -44,27 +44,22 @@ jobs:
           echo "TARGET_BRANCH=${TARGET_BRANCH}" >> $GITHUB_ENV
           
       - name: Sync from Upstream Repository
+        env:
+          BRANCH_NAME: "sync-${{ github.run_id }}"  # Temporary branch name for the PR
         run: |
           echo "Syncing from upstream repository $UPSTREAM_REPO on branch $TARGET_BRANCH"
           
           # Perform fetch and merge, attempting to resolve conflicts by preferring the upstream changes
           git fetch "$UPSTREAM_REPO" "$TARGET_BRANCH"
-          git merge FETCH_HEAD -m "Merge changes from upstream $UPSTREAM_REPO/$TARGET_BRANCH" || {
-            echo "Conflict detected. Resolving by preferring upstream changes..."
-            git merge --strategy-option theirs --no-edit FETCH_HEAD
-          }
+          git checkout -b "$BRANCH_NAME"
 
-      - name: Create a new branch for PR if changes detected
-        id: create_branch
-        env:
-          BRANCH_NAME: "sync-${{ github.run_id }}"  # Temporary branch name for the PR
-        run: |
-          if [ "$(git status --porcelain)" ]; then
-            git checkout -b "$BRANCH_NAME"
-            echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-          else
-            echo "No changes detected. Exiting."
-            exit 0
+          # Attempt to merge, allowing conflicts
+          if ! git merge FETCH_HEAD -m "Merge changes from upstream $UPSTREAM_REPO/$TARGET_BRANCH"; then
+            echo "Conflicts detected. Staging conflicted files for the pull request."
+            # Stage all changes, including conflicts
+            git add -A
+            # Commit the merge with conflicts
+            git commit -m "Merge changes from upstream $UPSTREAM_REPO/$TARGET_BRANCH with conflicts"
           fi
 
       - name: Push changes to new branch
