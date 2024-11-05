@@ -12,12 +12,15 @@ on:
       MANIFEST_FILENAME:
         required: true
         type: string
+      DYNAMIC_MANIFEST:
+        required: false
+        type: string
+        default: "false"
 
 env:
   DATE: ${{ github.run_id }}
 
 jobs:
-
   Building-project:
     runs-on: ubuntu-latest
 
@@ -39,7 +42,7 @@ jobs:
           submodules: 'true'
 
       - name: "Assembling manifest"
-        if: ${{ env.DYNAMIC_MANIFEST == 'true' }}
+        if: ${{ inputs.DYNAMIC_MANIFEST == 'true' }}
         run: |
           if [ -f "${GITHUB_WORKSPACE}/automation_tools/assemble_manifest.sh" ]; then
             /bin/bash "${GITHUB_WORKSPACE}/automation_tools/assemble_manifest.sh"
@@ -49,12 +52,12 @@ jobs:
           fi
 
       - name: "[DEBUG] Outputting manifest"
-        if: ${{ env.DYNAMIC_MANIFEST == 'true' }}
+        if: ${{ inputs.DYNAMIC_MANIFEST == 'true' }}
         run: |
-          if [ -f "${{ env.MANIFEST_FILENAME }}" ]; then
-            cat "${{ env.MANIFEST_FILENAME }}"
+          if [ -f "${{ inputs.MANIFEST_FILENAME }}" ]; then
+            cat "${{ inputs.MANIFEST_FILENAME }}"
           else
-            echo "ERROR: manifest file not found: ${{ env.MANIFEST_FILENAME }}"
+            echo "ERROR: manifest file not found: ${{ inputs.MANIFEST_FILENAME }}"
             exit 1
           fi
 
@@ -76,7 +79,7 @@ jobs:
             --install-deps-from=flathub-beta \
             --repo="/workspace/artifacts-repo" \
             "/workspace/artifacts-build-dir" \
-            "${{ env.MANIFEST_FILENAME }}"
+            "${{ inputs.MANIFEST_FILENAME }}"
               
       - name: "Exporting dir tree"
         id: tree
