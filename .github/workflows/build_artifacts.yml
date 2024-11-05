@@ -39,7 +39,7 @@ jobs:
           submodules: 'true'
 
       - name: "Install dependencies"
-        uses: ./.github/workflows/build_artifacts.yml
+        uses: RetroDECK/components-template/.github/workflows/install_dependencies.yml@main
 
       - name: "Assembling manifest"
         if: ${{ env.DYNAMIC_MANIFEST == 'true' }}
