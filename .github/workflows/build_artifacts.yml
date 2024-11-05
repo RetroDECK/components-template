@@ -44,6 +44,12 @@ jobs:
         with:
           submodules: 'true'
 
+      - name: Configuring Git
+        run: |
+          git config --global protocol.file.allow always
+          git config --global user.name "Rekku"
+          git config --global user.email "rekku@retrodeck.net"
+
       - name: "Assembling manifest"
         if: ${{ inputs.DYNAMIC_MANIFEST == 'true' }}
         run: |
@@ -66,10 +72,6 @@ jobs:
 
       - name: "Build flatpak"
         run: |
-
-          # Configure Git
-          git config --global protocol.file.allow always
-      
           flatpak-builder --user --force-clean \
             --install-deps-from=flathub \
             --install-deps-from=flathub-beta \
