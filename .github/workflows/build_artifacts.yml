@@ -26,6 +26,9 @@ jobs:
 
     steps:
 
+      - name: Prepearing environment
+        run: curl -s "https://raw.githubusercontent.com/RetroDECK/components-template/refs/heads/main/automation_tools/install_dependencies.sh" | /bin/bash
+
       - name: Generate a token for Rekku
         if: ${{ github.repository == 'RetroDECK/RetroDECK' }}
         id: generate-rekku-token
@@ -63,21 +66,15 @@ jobs:
 
       - name: "Build flatpak"
         run: |
-          # Pull the Docker image
-          docker pull ebassi/flathub:base
-      
           # Configure Git
           git config --global protocol.file.allow always
       
-          # Run the flatpak build inside the Docker container
-          docker run --rm \
-            -v "${GITHUB_WORKSPACE}:/workspace" \
-            -w /workspace \
-            ghcr.io/retrodeck/retrodeck-builder:latest \
-            --force-clean \
-            --repo="/workspace/artifacts-repo" \
-            "/workspace/artifacts-build-dir" \
-            "${{ inputs.MANIFEST_FILENAME }}"
+          flatpak-builder --user --force-clean \
+            --install-deps-from=flathub \
+            --install-deps-from=flathub-beta \
+            --repo=${GITHUB_WORKSPACE}/artifacts-repo \
+            "${GITHUB_WORKSPACE}/artifacts-build-dir" \
+            net.retrodeck.retrodeck.yml
               
       - name: "Exporting dir tree"
         id: tree
