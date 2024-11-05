@@ -6,23 +6,30 @@
 name: "Build Artifacts for RetroDECK main manifest"
 
 on:
-  push:
-    branches:
-     - master
   workflow_dispatch:
 
+env:
+  RUNNER_TAG: ${{ env.RUNNER_TAG || 'ubuntu-latest' }}
+  DATE: ${{ github.run_id }}
+  MANIFEST_FILENAME: ${{ env.MANIFEST_FILENAME || '' }}
 
 jobs:
 
-  Building_project:
-    runs-on: ${{ env.RUNNER_TAG || 'ubuntu-latest' }}
+  Check-variables:
+    runs-on: ubuntu-latest
     steps:
+      - name: Check MANIFEST_FILENAME is set
+        run: |
+          if [ -z "${{ env.MANIFEST_FILENAME }}" ]; then
+            echo "Error: MANIFEST_FILENAME is not set. This is required for the pipeline to run."
+            exit 1
+          fi
 
-      # Circumventing this bug: https://github.com/flatpak/flatpak-builder/issues/317
-      # - name: Remove stuck mounts
-      #   run: sudo umount -f /home/ubuntu/solarus-runner/_work/RetroDECK-solarus/RetroDECK-solarus/.flatpak-builder/rofiles/*
-      #   continue-on-error: true
-    
+  Building-project:
+    needs: Check-variables
+    runs-on: ${{ env.RUNNER_TAG }}
+
+    steps:
       - name: Clone repo
         uses: actions/checkout@v3
         with:
@@ -30,16 +37,27 @@ jobs:
           token: ${{ secrets.TRIGGER_BUILD_TOKEN }}
 
       - name: "Install dependencies"
-        run: "automation_tools/install_dependencies.sh"
+        uses: RetroDECK/components-template/.github/workflows/install_dependencies.yml@main
 
-      - name: "Assembilng manifest"
+      - name: "Assembling manifest"
         if: ${{ env.DYNAMIC_MANIFEST == 'true' }}
-        run: "/bin/bash ${GITHUB_WORKSPACE}/automation_tools/assemble_manifest.sh"
+        run: |
+          if [ -f "${GITHUB_WORKSPACE}/automation_tools/assemble_manifest.sh" ]; then
+            /bin/bash "${GITHUB_WORKSPACE}/automation_tools/assemble_manifest.sh"
+          else
+            echo "Manifest assembly script not found."
+            exit 1
+          fi
 
       - name: "[DEBUG] Outputting manifest"
-        continue-on-error: true
         if: ${{ env.DYNAMIC_MANIFEST == 'true' }}
-        run: cat ${{ env.MANIFEST_FILENAME }}
+        run: |
+          if [ -f "${{ env.MANIFEST_FILENAME }}" ]; then
+            cat "${{ env.MANIFEST_FILENAME }}"
+          else
+            echo "ERROR: manifest file not found: ${{ env.MANIFEST_FILENAME }}"
+            exit 1
+          fi
 
       - name: "Build flatpak"
         run: |
@@ -47,22 +65,29 @@ jobs:
           flatpak-builder --user --force-clean \
             --install-deps-from=flathub \
             --install-deps-from=flathub-beta \
-            --repo=${GITHUB_WORKSPACE}/artifacts-repo \
-            "${GITHUB_WORKSPACE}"/artifacts-build-dir \
+            --repo="${GITHUB_WORKSPACE}/artifacts-repo" \
+            "${GITHUB_WORKSPACE}/artifacts-build-dir" \
             "${{ env.MANIFEST_FILENAME }}"
 
       - name: "Exporting dir tree"
         id: tree
-        run: tree -H ./ > ${GITHUB_WORKSPACE}/tree.html
+        run: |
+          tree -H ./ > ${GITHUB_WORKSPACE}/tree.html
+          echo "Directory tree exported to tree.html"
 
-      - name: Create Artifact for RetroDECK
-        run: | 
+      - name: "Create Artifact for RetroDECK"
+        run: |
           tar -czf ${GITHUB_WORKSPACE}/RetroDECK-Artifact.tar.gz -C ${GITHUB_WORKSPACE}/artifacts-build-dir .
           hash=($(sha256sum ${GITHUB_WORKSPACE}/RetroDECK-Artifact.tar.gz))
           echo $hash > ${GITHUB_WORKSPACE}/RetroDECK-Artifact-cooker.sha
-          mv -f RetroDECK-Artifact-cooker.* ${{ secrets.ARTIFACT_REPO }}
-        continue-on-error: true
-        timeout-minutes: 1440
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: RetroDECK-Artifacts
+          path: |
+            ${GITHUB_WORKSPACE}/RetroDECK-Artifact.tar.gz
+            ${GITHUB_WORKSPACE}/tree.html
 
       - name: Set environment variable with current branch name
         run: echo "GITHUB_REF_SLUG=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_ENV
@@ -71,21 +96,15 @@ jobs:
         id: branch_name
         run: echo "BRANCH_NAME=$(echo $GITHUB_REF | sed 's|refs/heads/||')" >> $GITHUB_ENV
 
-      - name: Get date
-        id: date
-        run: echo "DATE=$(date +'%d%m%y.%S')" >> $GITHUB_ENV
-
       - name: Publish the artifacts in a new release
         uses: ncipollo/release-action@v1
         with:
-          tag: "${{ github.ref_name }}-${{ github.event.date || github.run_id }}"
+          tag: "${{ github.ref_name }}-${{ github.run_id }}"
           body: |
             # Release Notes
-            These are the artifacts for RetroDECK of {{ github.repository }}, built from commit: ${{ github.repository }}@${{ github.sha }}.
+            These are the artifacts for RetroDECK from ${{ github.repository }}, built from commit: ${{ github.repository }}@${{ github.sha }}.
             On branch [${{ github.ref_name }}](https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}).
-
-          artifacts: "RetroDECK-Artifact.tar.gz, tree.html"
+          artifacts: "${GITHUB_WORKSPACE}/RetroDECK-Artifact.tar.gz, ${GITHUB_WORKSPACE}/tree.html"
           allowUpdates: true
           makeLatest: true
-          token: ${{ secrets.TRIGGER_BUILD_TOKEN }}
-        continue-on-error: true
+          token: ${{ secrets.TRIGGER_BUILD_TOKEN || secrets.GITHUB_TOKEN }}
