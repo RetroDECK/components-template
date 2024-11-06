@@ -36,7 +36,6 @@ jobs:
         with:
           app-id: ${{ vars.REKKU_APP_ID }}
           private-key: ${{ secrets.REKKU_PRIVATE_KEY }}
-          repositories: "RetroDECK,Cooker"
           owner: "RetroDECK"
 
       - name: Clone repo
@@ -90,7 +89,7 @@ jobs:
         run: |
           tar -czf ${GITHUB_WORKSPACE}/RetroDECK-Artifact.tar.gz -C ${GITHUB_WORKSPACE}/artifacts-build-dir .
           hash=($(sha256sum ${GITHUB_WORKSPACE}/RetroDECK-Artifact.tar.gz))
-          echo $hash > ${GITHUB_WORKSPACE}/RetroDECK-Artifact-cooker.sha
+          echo $hash > ${GITHUB_WORKSPACE}/RetroDECK-Artifact.sha
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -115,7 +114,7 @@ jobs:
             # Release Notes
             These are the artifacts for RetroDECK from ${{ github.repository }}, built from commit: ${{ github.repository }}@${{ github.sha }}.
             On branch [${{ github.ref_name }}](https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}).
-          artifacts: "RetroDECK-Artifact.tar.gz, tree.html, RetroDECK-Artifact-cooker.sha"
+          artifacts: "RetroDECK-Artifact.tar.gz, tree.html, RetroDECK-Artifact.sha"
           allowUpdates: true
           makeLatest: true
           token: ${{ steps.generate-rekku-token.outputs.token || secrets.TRIGGER_BUILD_TOKEN || secrets.GITHUB_TOKEN }}
