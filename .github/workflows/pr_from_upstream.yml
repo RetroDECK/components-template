@@ -45,6 +45,7 @@ jobs:
           echo "TARGET_BRANCH=${TARGET_BRANCH}" >> $GITHUB_ENV
           
       - name: Sync from Upstream Repository
+        continue-on-error: true
         env:
           BRANCH_NAME: "feat/update-from-upstream"
         run: |
@@ -66,16 +67,10 @@ jobs:
           git pull "${{ env.UPSTREAM_REPO }}" "${{ env.TARGET_BRANCH }}"
 
           git diff
-      
-          # Check if there are any changes to commit
-          if git diff --exit-code "origin/${{ env.TARGET_BRANCH }}"; then
-            echo "No changes detected from upstream. Exiting without creating PR."
-            echo "SKIP_PR=true" >> $GITHUB_ENV
-          else
-            git add -A
-            git commit -m "Updating ${{ github.event.repository.name }} with upstream changes"
-            echo "SKIP_PR=false" >> $GITHUB_ENV
-          fi
+
+          echo "GIT_DIFF<<EOF" >> $GITHUB_ENV
+          git diff >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       
       - name: Push changes to new branch
         if: success() && env.SKIP_PR == 'false'
@@ -94,6 +89,11 @@ jobs:
             This PR merges the latest changes from the upstream repository:
             - **Repository**: ${{ env.UPSTREAM_REPO }}
             - **Branch**: ${{ env.TARGET_BRANCH }}
+
+            ## Differences
+            ```
+            ${{  env.GIT_DIFF }}
+            ```
       
             ## Conflict Resolution Instructions
             If there are conflicts in this PR, you can resolve them locally by following these steps:
