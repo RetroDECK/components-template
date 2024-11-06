@@ -53,8 +53,6 @@ jobs:
       
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
       
-          git fetch origin
-      
           # Switches or creates update branch
           if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
             git checkout "$BRANCH_NAME"
