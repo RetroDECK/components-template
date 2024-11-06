@@ -30,6 +30,7 @@ jobs:
           git config --global protocol.file.allow always
           git config --global user.name "Rekku"
           git config --global user.email "rekku@retrodeck.net"
+          git config --global pull.rebase false
 
       - name: Set default values for UPSTREAM_REPO and TARGET_BRANCH if not set
         run: |
@@ -62,6 +63,7 @@ jobs:
       
           # Fetch changes from the upstream repository without merging
           git fetch "${{ env.UPSTREAM_REPO }}" "${{ env.TARGET_BRANCH }}"
+          git pull "${{ env.UPSTREAM_REPO }}" "${{ env.TARGET_BRANCH }}"
 
           git diff
       
