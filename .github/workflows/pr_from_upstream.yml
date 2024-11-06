@@ -76,9 +76,9 @@ jobs:
           fi
 
           # Check if any changes were introduced by the merge
-          if git diff --exit-code; then
+          if [ -z "$(git diff --stat)" ]; then
             echo "No changes detected after merging. Exiting."
-            exit 0  # Exit the workflow if no changes are detected
+            exit 0
           fi
 
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
