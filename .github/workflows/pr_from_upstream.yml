@@ -19,14 +19,14 @@ jobs:
           git checkout "${{ github.ref_name }}"
           git branch --set-upstream-to=upstream/${{ github.ref_name }} ${{ github.ref_name }}
 
-      - name: Generate a token for Rekku
-        id: generate-rekku-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ vars.REKKU_APP_ID }}
-          private-key: ${{ secrets.REKKU_PRIVATE_KEY }}
-          repositories: "RetroDECK,Cooker"
-          owner: "RetroDECK"
+      # - name: Generate a token for Rekku
+      #   id: generate-rekku-token
+      #   uses: actions/create-github-app-token@v1
+      #   with:
+      #     app-id: ${{ vars.REKKU_APP_ID }}
+      #     private-key: ${{ secrets.REKKU_PRIVATE_KEY }}
+      #     repositories: "RetroDECK,Cooker"
+      #     owner: "RetroDECK"
 
       - name: Configuring Git
         run: |
