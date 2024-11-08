@@ -15,6 +15,16 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0  # Retrieve full history to allow merging
 
+      - name: Configure the upstream
+        run: |
+          CURRENT_BRANCH="${{ github.ref_name }}"
+
+          git remote add upstream "https://github.com/flathub/${{ github.event.repository.name }}"
+          git fetch upstream
+          git fetch origin
+
+          git branch --set-upstream-to=upstream/$CURRENT_BRANCH $CURRENT_BRANCH
+
       - name: Generate a token for Rekku
         if: ${{ github.repository == 'RetroDECK/RetroDECK' }}
         id: generate-rekku-token
