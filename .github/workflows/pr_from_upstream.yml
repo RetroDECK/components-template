@@ -76,8 +76,10 @@ jobs:
 
       - name: Push changes to new branch
         if: success()
-        run: |
-          git push origin "${{ env.BRANCH_NAME }}"
+        uses: ad-m/github-push-action@v0.8.0
+        with:
+          branch: "${{ env.BRANCH_NAME }}"
+          github_token: ${{ secrets.REKKU_PRIVATE_KEY }}
       
       - name: Create Pull Request
         if: success()
