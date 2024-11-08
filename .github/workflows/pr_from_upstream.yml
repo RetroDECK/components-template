@@ -3,11 +3,10 @@ name: "Sync with Upstream and Create PR"
 on:
     workflow_dispatch:
     workflow_call:
-      inputs:
+      secrets:
         REKKU_PRIVATE_KEY:
           description: 'Private key for Rekku'
           required: true
-          type: string
 
 jobs:
   sync-upstream:
@@ -29,7 +28,7 @@ jobs:
         uses: actions/create-github-app-token@v1
         with:
           app-id: ${{ vars.REKKU_APP_ID }}
-          private-key: ${{ inputs.REKKU_PRIVATE_KEY }}
+          private-key: ${{ secrets.REKKU_PRIVATE_KEY }}
           owner: "RetroDECK"
 
       - name: Configuring Git
