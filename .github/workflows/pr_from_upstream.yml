@@ -79,7 +79,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           branch: "${{ env.BRANCH_NAME }}"
-          github_token: ${{ secrets.REKKU_PRIVATE_KEY }}
+          github_token: ${{ steps.generate-rekku-token.outputs.token || secrets.TRIGGER_BUILD_TOKEN }}
       
       - name: Create Pull Request
         if: success()
