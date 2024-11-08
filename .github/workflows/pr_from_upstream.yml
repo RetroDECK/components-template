@@ -70,6 +70,8 @@ jobs:
           git fetch "${{ env.UPSTREAM_REPO }}" "${{ env.TARGET_BRANCH }}"
           git pull "${{ env.UPSTREAM_REPO }}" "${{ env.TARGET_BRANCH }}"
 
+          git commit --allow-empty -m "Updating module with upstream repo"
+
           git diff
 
           echo "GIT_DIFF=$git diff --minimal" >> $GITHUB_ENV
@@ -85,6 +87,7 @@ jobs:
         if: success()
         uses: peter-evans/create-pull-request@v7.0.5
         with:
+          delete-branch: true
           token: ${{ steps.generate-rekku-token.outputs.token || secrets.TRIGGER_BUILD_TOKEN }}
           commit-message: "Sync with upstream changes from ${{ env.UPSTREAM_REPO }}"
           branch: ${{ env.BRANCH_NAME }}
