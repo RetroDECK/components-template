@@ -70,8 +70,6 @@ jobs:
           git fetch "${{ env.UPSTREAM_REPO }}" "${{ env.TARGET_BRANCH }}"
           git pull "${{ env.UPSTREAM_REPO }}" "${{ env.TARGET_BRANCH }}"
 
-          git commit --allow-empty -m "Updating module with upstream repo"
-
           git diff
 
           echo "GIT_DIFF=$git diff --minimal" >> $GITHUB_ENV

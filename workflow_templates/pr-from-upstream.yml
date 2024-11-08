@@ -9,3 +9,5 @@ on:
 jobs:
   upstream-sync:
     uses: RetroDECK/components-template/.github/workflows/pr_from_upstream.yml@main
+    secrets:
+      REKKU_PRIVATE_KEY: ${{ secrets.REKKU_PRIVATE_KEY }}
