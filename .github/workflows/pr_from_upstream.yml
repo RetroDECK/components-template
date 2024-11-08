@@ -79,7 +79,7 @@ jobs:
         if: success()
         uses: peter-evans/create-pull-request@v7.0.5
         with:
-          #token: ${{ steps.generate-rekku-token.outputs.token || secrets.GITHUB_TOKEN }}
+          token: ${{ steps.generate-rekku-token.outputs.token || secrets.TRIGGER_BUILD_TOKEN }}
           commit-message: "Sync with upstream changes from ${{ env.UPSTREAM_REPO }}"
           branch: ${{ env.BRANCH_NAME }}
           title: "Sync with upstream ${{ env.UPSTREAM_REPO }}"
