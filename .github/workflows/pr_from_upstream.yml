@@ -3,6 +3,11 @@ name: "Sync with Upstream and Create PR"
 on:
     workflow_dispatch:
     workflow_call:
+      inputs:
+        REKKU_PRIVATE_KEY:
+          description: 'Private key for Rekku'
+          required: true
+          type: string
 
 jobs:
   sync-upstream:
