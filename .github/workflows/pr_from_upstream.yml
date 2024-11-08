@@ -68,7 +68,7 @@ jobs:
       
           # Fetch changes from the upstream repository without merging
           git fetch "${{ env.UPSTREAM_REPO }}" "${{ env.TARGET_BRANCH }}"
-          git pull "${{ env.UPSTREAM_REPO }}" "${{ env.TARGET_BRANCH }}"
+          git merge "${{ env.UPSTREAM_REPO }}/$TARGET_BRANCH" --no-ff || true
 
           git diff
 
