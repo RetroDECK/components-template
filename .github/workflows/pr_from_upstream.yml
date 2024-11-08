@@ -10,23 +10,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0  # Retrieve full history to allow merging
-
-      - name: Configure the upstream
         run: |
-          CURRENT_BRANCH="${{ github.ref_name }}"
-
+          # Manually fully clone the repo
+          git clone "https://github.com/${{ github.repository }}" .
+          git fetch --all --tags --prune
           git remote add upstream "https://github.com/flathub/${{ github.event.repository.name }}"
-          git fetch upstream
-          git fetch origin
-
-          git branch --set-upstream-to=upstream/$CURRENT_BRANCH $CURRENT_BRANCH
+          git fetch upstream --tags
+          git checkout "${{ github.ref_name }}"
+          git branch --set-upstream-to=upstream/${{ github.ref_name }} ${{ github.ref_name }}
 
       - name: Generate a token for Rekku
-        if: ${{ github.repository == 'RetroDECK/RetroDECK' }}
         id: generate-rekku-token
         uses: actions/create-github-app-token@v1
         with:
