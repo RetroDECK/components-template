@@ -2,6 +2,10 @@ name: "Generate a token for Rekku"
 
 on:
   workflow_call:
+    inputs:
+      REKKU_PRIVATE_KEY:
+        required: false
+        type: string
 
 jobs:
   Generate-a-token-for-Rekku:
@@ -17,5 +21,5 @@ jobs:
         uses: actions/create-github-app-token@v1
         with:
           app-id: ${{ vars.REKKU_APP_ID }}
-          private-key: ${{ secrets.REKKU_PRIVATE_KEY }}
+          private-key: ${{ inputs.REKKU_PRIVATE_KEY || secrets.REKKU_PRIVATE_KEY }}
           owner: "RetroDECK"
