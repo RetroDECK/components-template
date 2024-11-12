@@ -1,0 +1,90 @@
+# This GitHub Actions workflow uploads release artifacts to a Forgejo release.
+# It can be called by another GitHub Actions workflow using `workflow_call`.
+#
+# ## Inputs:
+# - `release_body` (string, required): The body content for the release notes.
+# - `artifacts` (string, required): A comma-separated list of artifact files to upload.
+# - `tag` (string, required): The tag for the release (e.g., "v1.0.0").
+#
+# ## Example usage:
+# ```yaml
+# jobs:
+#   call-release-workflow:
+#     uses: ./.github/workflows/publish-on-fogejo.yml
+#     with:
+#       release_body: |
+#         # Release Notes
+#         This is an automated release based on the latest commit.
+#         See the changelog for details.
+#       artifacts: "RetroDECK-cooker.flatpak,RetroDECK-cooker.flatpak.sha,RetroDECK-Artifact.tar.gz"
+#       tag: "v1.0.0"
+# ```
+
+name: "Build Artifacts for RetroDECK main manifest"
+
+on:
+  workflow_call:
+    inputs:
+      release_body:
+        description: "The body content for the release notes."
+        required: true
+        type: string
+      artifacts:
+        description: "A comma-separated list of artifact files to upload."
+        required: true
+        type: string
+      tag:
+        description: "The tag for the release."
+        required: true
+        type: string
+
+jobs:
+  Publish-on-fogejo:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Upload artifacts to Forgejo Release
+      run: |
+          # Set variables for Forgejo host, access token, and release details
+          FORGEJO_HOST="repo.retrodeck.net"
+          UPLOAD_HOST="upload.retrodeck.net"
+          ORGANIZATION="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          FORGEJO_TOKEN="${{ secrets.GITEA_TRIGGER_BUILD_TOKEN }}"
+          RELEASE_NAME="${REPO} ${{ inputs.tag }}"
+          TAG="${{ inputs.tag }}"
+          RELEASE_BODY="${{ inputs.release_body }}"
+          ARTIFACTS="${{ inputs.artifacts }}"
+
+          # Create a release using curl and capture the release ID
+          release_response=$(curl -X POST \
+              -H "Authorization: token ${FORGEJO_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"tag_name\":\"$TAG\",\"name\":\"$RELEASE_NAME\",\"body\":\"$RELEASE_BODY\"}" \
+              "https://${FORGEJO_HOST}/api/v1/repos/${ORGANIZATION}/${REPO}/releases")
+
+          # Check if the release creation was successful
+          if echo "$release_response" | jq -e '.id' > /dev/null; then
+            release_id=$(echo "$release_response" | jq -r '.id')
+          else
+            echo "Error creating release: $release_response"
+            exit 1
+          fi
+
+          # Loop through the list of artifacts and upload each one
+          IFS=',' read -r -a artifact_list <<< "$ARTIFACTS"
+          for artifact in "${artifact_list[@]}"; do
+            if [ -f "$artifact" ]; then
+              echo "Uploading $artifact..."
+              curl -X POST \
+                  -H "Authorization: token ${FORGEJO_TOKEN}" \
+                  -H "Content-Type: multipart/form-data" \
+                  -F "attachment=@${artifact}" \
+                  "https://${UPLOAD_HOST}/api/v1/repos/${ORGANIZATION}/${REPO}/releases/${release_id}/assets?name=$(basename ${artifact})"
+            else
+              echo "Artifact not found: $artifact"
+              exit 1
+            fi
+          done
+      shell: bash
