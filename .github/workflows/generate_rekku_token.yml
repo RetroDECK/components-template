@@ -7,6 +7,9 @@ jobs:
   Generate-a-token-for-Rekku:
     runs-on: ubuntu-latest
 
+    outputs:
+      rekku_token: ${{ steps.generate-rekku-token.outputs.token }}
+
     steps:
 
       - name: Generate a token for Rekku
