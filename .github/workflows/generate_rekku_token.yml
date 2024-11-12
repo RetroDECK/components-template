@@ -1,0 +1,18 @@
+name: "Generate a token for Rekku"
+
+on:
+  workflow_call:
+
+jobs:
+  Generate-a-token-for-Rekku:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Generate a token for Rekku
+        id: generate-rekku-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.REKKU_APP_ID }}
+          private-key: ${{ secrets.REKKU_PRIVATE_KEY }}
+          owner: "RetroDECK"
