@@ -51,7 +51,7 @@ jobs:
           UPLOAD_HOST="upload.retrodeck.net"
           ORGANIZATION="${{ github.repository_owner }}"
           REPO="${{ github.event.repository.name }}"
-          FORGEJO_TOKEN="${{ secrets.GITEA_TRIGGER_BUILD_TOKEN }}"
+          FORGEJO_TOKEN="${{ secrets.FOGEJO_TRIGGER_BUILD_TOKEN }}"
           RELEASE_NAME="${REPO} ${{ inputs.tag }}"
           TAG="${{ inputs.tag }}"
           RELEASE_BODY="${{ inputs.release_body }}"
