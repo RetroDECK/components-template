@@ -21,17 +21,22 @@ env:
   DATE: ${{ github.run_id }}
 
 jobs:
+
+  # Generate Rekku Token Job
+  Generate-Rekku-Token:
+    uses: RetroDECK/components-template/.github/workflows/generate_rekku_token.yml@main
+    secrets:
+      REKKU_PRIVATE_KEY: ${{ secrets.REKKU_PRIVATE_KEY }}
+
   Building-project:
     runs-on: ubuntu-latest
+    env:
+      REKKU_TOKEN: ${{ needs.Generate-Rekku-Token.outputs.rekku_token }}
 
     steps:
 
       - name: Prepearing environment
         run: curl -s "https://raw.githubusercontent.com/RetroDECK/components-template/refs/heads/main/automation_tools/install_dependencies.sh" | /bin/bash
-
-      - name: Generate a token for Rekku
-        id: generate-rekku-token
-        uses: RetroDECK/components-template/.github/workflows/generate_rekku_token.yml@main
 
       - name: Clone repo
         uses: actions/checkout@v4
