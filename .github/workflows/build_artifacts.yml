@@ -22,16 +22,8 @@ env:
 
 jobs:
 
-  # Generate Rekku Token Job
-  Generate-Rekku-Token:
-    uses: RetroDECK/components-template/.github/workflows/generate_rekku_token.yml@main
-    secrets:
-      REKKU_PRIVATE_KEY: ${{ secrets.REKKU_PRIVATE_KEY }}
-
   Building-project:
     runs-on: ubuntu-latest
-    env:
-      REKKU_TOKEN: ${{ needs.Generate-Rekku-Token.outputs.rekku_token }}
 
     steps:
 
@@ -106,6 +98,16 @@ jobs:
         id: branch_name
         run: echo "BRANCH_NAME=$(echo $GITHUB_REF | sed 's|refs/heads/||')" >> $GITHUB_ENV
 
+      - name: Generate a token for Rekku
+        if: ${{ github.repository == 'RetroDECK/RetroDECK' }}
+        id: generate-rekku-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.REKKU_APP_ID }}
+          private-key: ${{ secrets.REKKU_PRIVATE_KEY }}
+          repositories: "RetroDECK,Cooker"
+          owner: "RetroDECK"
+
       - name: Publish the artifacts in a new release
         uses: ncipollo/release-action@v1
         with:
@@ -117,4 +119,4 @@ jobs:
           artifacts: "RetroDECK-Artifact.tar.gz, tree.html, RetroDECK-Artifact.sha"
           allowUpdates: true
           makeLatest: true
-          token: ${{ steps.generate-rekku-token.outputs.token || secrets.TRIGGER_BUILD_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ steps.generate-rekku-token.outputs.token || secrets.TRIGGER_BUILD_TOKEN }}
