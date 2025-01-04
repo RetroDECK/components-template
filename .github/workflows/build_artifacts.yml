@@ -16,6 +16,10 @@ on:
         required: false
         type: string
         default: "false"
+      RUNS_ON:
+        required: false
+        type: string
+        default: "ubuntu-latest"
 
 env:
   DATE: ${{ github.run_id }}
@@ -23,7 +27,7 @@ env:
 jobs:
 
   Building-project:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.RUNS_ON }}
 
     steps:
 
