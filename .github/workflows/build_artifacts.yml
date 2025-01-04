@@ -105,7 +105,6 @@ jobs:
         with:
           app-id: ${{ vars.REKKU_APP_ID }}
           private-key: ${{ secrets.REKKU_PRIVATE_KEY }}
-          repositories: "RetroDECK,Cooker"
           owner: "RetroDECK"
 
       - name: Publish the artifacts in a new release
