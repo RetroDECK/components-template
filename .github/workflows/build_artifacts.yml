@@ -118,4 +118,4 @@ jobs:
           artifacts: "RetroDECK-Artifact.tar.gz, tree.html, RetroDECK-Artifact.sha"
           allowUpdates: true
           makeLatest: true
-          token: ${{ steps.generate-rekku-token.outputs.token || secrets.TRIGGER_BUILD_TOKEN }}
+          token: ${{ steps.generate-rekku-token.outputs.token || secrets.TRIGGER_BUILD_TOKEN || secrets.GITHUB_TOKEN }}
