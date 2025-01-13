@@ -20,6 +20,10 @@ on:
         required: false
         type: string
         default: "ubuntu-latest"
+      FORCED_RUNTIME:
+        required: false
+        type: string
+        default: "false"
 
 env:
   DATE: ${{ github.run_id }}
@@ -54,6 +58,26 @@ jobs:
             echo "Manifest assembly script not found."
             exit 1
           fi
+
+      - name: "Fetch and replace runtime values"
+        if: ${{ inputs.FORCED_RUNTIME == 'true' }}
+        run: |
+            MANIFEST_CONTENT=$(curl -s https://raw.githubusercontent.com/RetroDECK/RetroDECK/cooker/net.retrodeck.retrodeck.yml)
+            RUNTIME=$(echo "$MANIFEST_CONTENT" | yq e '.runtime' -)
+            RUNTIME_VERSION=$(echo "$MANIFEST_CONTENT" | yq e '.runtime-version' -)
+            SDK=$(echo "$MANIFEST_CONTENT" | yq e '.sdk' -)
+
+            for file in ./*.*.*.json ./*.*.*.yml ./*.*.*.yaml; do
+              if [[ -f "$file" ]]; then
+                if [[ "$file" == *.json ]]; then
+                  jq ".runtime = \"$RUNTIME\" | .\"runtime-version\" = \"$RUNTIME_VERSION\" | .sdk = \"$SDK\"" "$file" > tmp.$$.json && mv tmp.$$.json "$file"
+                else
+                  yq e -i ".runtime = \"$RUNTIME\"" "$file"
+                  yq e -i ".runtime-version = \"$RUNTIME_VERSION\"" "$file"
+                  yq e -i ".sdk = \"$SDK\"" "$file"
+                fi
+              fi
+            done
 
       - name: "[DEBUG] Outputting manifest"
         if: ${{ inputs.DYNAMIC_MANIFEST == 'true' }}
